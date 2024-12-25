@@ -1,6 +1,9 @@
 package services
 
 import (
+	"encoding/json"
+
+	"github.com/Friends-Against-Humanity/senpai/internal/core/domain"
 	"github.com/Friends-Against-Humanity/senpai/internal/core/ports"
 )
 
@@ -20,8 +23,10 @@ func NewMainService(cfgs ...MainServiceConfigurer) MainService {
 	return svc
 }
 
-func (s *MainService) Prompt(message string) (string, error) {
-	result, err := s.ConversationalAgent.PromptWithoutContext(MAIN_PROMPT, message)
+func (s *MainService) Prompt(metadata domain.Metadata, message string) (string, error) {
+	_metadata := s.makeMetadata(metadata)
+	prompt := NewPrompt(MAIN_PROMPT_WITH_METADATA, "METADATA_JSON", _metadata)
+	result, err := s.ConversationalAgent.Prompt(prompt, message)
 	if err != nil {
 		return "", s.formatError(err)
 	}
@@ -31,4 +36,9 @@ func (s *MainService) Prompt(message string) (string, error) {
 
 func (s *MainService) formatError(err error) error {
 	return ErrInternal
+}
+
+func (s *MainService) makeMetadata(metadata domain.Metadata) string {
+	metadataBytes, _ := json.Marshal(metadata)
+	return string(metadataBytes)
 }

@@ -2,7 +2,6 @@ package openai
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,17 +27,13 @@ func NewOpenAIClient(cfgs ...OpenAIClientConfiger) *OpenAIClient {
 	return &client
 }
 
-func (c *OpenAIClient) PromptWithoutContext(system string, message string) (string, error) {
-	return c.Prompt(context.Background(), system, message)
-}
-
 func (c *OpenAIClient) _client(cfg OpenAIClientConfig) http.Client {
 	return http.Client{
 		Timeout: 30 * time.Second,
 	}
 }
 
-func (c *OpenAIClient) Prompt(ctx context.Context, system string, message string) (string, error) {
+func (c *OpenAIClient) Prompt(system string, message string) (string, error) {
 	// Body
 	r := NewRequestWithDefaults(c.cfg)
 	r.AddMessages(

@@ -3,6 +3,6 @@ package ports
 import "context"
 
 type ConversationalAgent interface {
-	PromptWithoutContext(system string, messages ...string) string
-	Prompt(ctx context.Context, system string, messages ...string) string
+	PromptWithoutContext(system string, message string) (string, error)
+	Prompt(ctx context.Context, system string, message string) (string, error)
 }

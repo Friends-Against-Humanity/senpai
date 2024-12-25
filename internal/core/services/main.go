@@ -1,6 +1,8 @@
 package services
 
-import "github.com/Friends-Against-Humanity/senpai/internal/core/ports"
+import (
+	"github.com/Friends-Against-Humanity/senpai/internal/core/ports"
+)
 
 type MainService struct {
 	ConversationalAgent ports.ConversationalAgent
@@ -18,6 +20,15 @@ func NewMainService(cfgs ...MainServiceConfigurer) MainService {
 	return svc
 }
 
-func (s *MainService) Prompt(message string) string {
-	return s.ConversationalAgent.PromptWithoutContext(MAIN_PROMPT, message)
+func (s *MainService) Prompt(message string) (string, error) {
+	result, err := s.ConversationalAgent.PromptWithoutContext(MAIN_PROMPT, message)
+	if err != nil {
+		return "", s.formatError(err)
+	}
+
+	return result, nil
+}
+
+func (s *MainService) formatError(err error) error {
+	return ErrInternal
 }

@@ -1,16 +1,18 @@
 package services
 
-import "strings"
-
-const (
-	MAIN_PROMPT               = `You are senpai, an AI assistant. You are here to help and chat with me.`
-	MAIN_PROMPT_WITH_METADATA = `You are senpai, an AI assistant. You are here to help and chat with me.
-
-You do what a default AI assistant does, for now. You will be able to do more in the future, when Niemand develops the personnas.
-
-In case you need metadata, here is the metadata in a JSON format: METADATA_JSON
-`
+import (
+	"strings"
 )
+
+type Prompt struct{}
+
+// func NewPrompt(defaultPrompt string) *Prompt {
+// 	return &Prompt{}
+// }
+
+// func NewMainPrompt() *Prompt {
+// 	return NewPrompt(prompt.MAIN_PROMPT)
+// }
 
 func NewPrompt(prompt string, args ...string) string {
 	if len(args)%2 == 1 {

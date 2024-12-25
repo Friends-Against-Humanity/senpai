@@ -13,7 +13,6 @@ type Bot struct {
 
 	// Workaround
 	members                  map[string]string
-	latestMessages           []string
 	maximimMessagesInHistory int
 }
 
@@ -21,8 +20,7 @@ type BotConfigurer func(b *Bot)
 
 func NewBot(cfg ...BotConfigurer) (*Bot, error) {
 	bot := &Bot{
-		latestMessages:           make([]string, 0),
-		maximimMessagesInHistory: 10,
+		maximimMessagesInHistory: 15,
 		members:                  map[string]string{},
 	}
 

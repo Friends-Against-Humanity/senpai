@@ -12,41 +12,21 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func handleError(err error) {
-	if err != nil {
-		os.Exit(1)
-	}
-}
-
 func main() {
 
 	err := log.InitLogger("debug", "dev")
 	handleError(err)
 
-	// L1
+	// Model
 	model := openai.NewOpenAIClient()
 
+	// Services
 	mainSvc := services.NewMainService(func(svc *services.MainService) error {
 		svc.ConversationalAgent = model
 		return nil
 	})
 
-	// chatHistory := []string{
-	// 	"adam: Hello, what's your name?",
-	// 	"senpai: Hi, Adam. I'm Senpai.",
-	// 	"adam: Yo, ill have a meeting mbaad maa Tom, thats the guy mtaa Company X from Japan, will show the game to my friend, and discuss the consulting plan, ill seek whats on his mind for first clients of the year, but stay tuned... U can apply GCP skills especially in Cloud Security and Kube, ill update but for sure it ll need more work force and not like a heavy one dw xD",
-	// 	"nour: hey there, that was a lot",
-	// }
-
-	// metadata := domain.Metadata{
-	// 	UserNickname: "nour",
-	// 	ChatHistory:  chatHistory,
-	// }
-
-	// response, err := mainSvc.Prompt(metadata, "hey senpai, where is the company located?")
-	// handleError(err)
-	// fmt.Println(response)
-
+	// Bot
 	botCfg := handler.NewDefaultBotConfig()
 	bot, err := handler.NewBot(func(b *handler.Bot) {
 		b.Service = mainSvc
@@ -57,7 +37,12 @@ func main() {
 	defer bot.Close()
 
 	wait()
+}
 
+func handleError(err error) {
+	if err != nil {
+		os.Exit(1)
+	}
 }
 
 func wait() {

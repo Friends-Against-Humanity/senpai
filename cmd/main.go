@@ -7,6 +7,7 @@ import (
 	"github.com/Friends-Against-Humanity/senpai/internal/core/services"
 	"github.com/Friends-Against-Humanity/senpai/internal/core/services/personas"
 	"github.com/Friends-Against-Humanity/senpai/internal/core/services/personas/normal"
+	"github.com/Friends-Against-Humanity/senpai/internal/core/services/personas/rafraf"
 	"github.com/Friends-Against-Humanity/senpai/internal/handler"
 	"github.com/Friends-Against-Humanity/senpai/internal/utils/log"
 	"github.com/Friends-Against-Humanity/senpai/pkg/channels/discord"
@@ -36,6 +37,7 @@ func main() {
 		svc.FallbackPersona = normal.NewNormalPersona()
 		svc.Personas = []personas.PersonaHandler{
 			normal.NewNormalPersona(),
+			rafraf.NewRafrafPersona(),
 		}
 
 		return nil

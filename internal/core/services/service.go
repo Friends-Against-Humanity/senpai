@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/Friends-Against-Humanity/senpai/internal/core/domain"
@@ -61,8 +60,6 @@ func (s *Service) Prompt(persona string, metadata domain.Metadata, message strin
 	)
 
 	prompt += s.personasPrompt()
-
-	fmt.Println("prompt", prompt)
 
 	result, err := s.ConversationalAgent.Prompt(prompt, message)
 	if err != nil {

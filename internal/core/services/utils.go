@@ -6,6 +6,7 @@ import (
 
 	"github.com/Friends-Against-Humanity/senpai/internal/core/domain"
 	"github.com/Friends-Against-Humanity/senpai/internal/core/services/personas"
+	"go.uber.org/zap"
 )
 
 func dumpMetadata(metadata domain.Metadata) string {
@@ -19,7 +20,10 @@ func dumpChatHistory(history domain.ChatHistory) string {
 }
 
 func (s *Service) getPersonaByName(name string) personas.PersonaHandler {
+	zap.L().Debug("lookup", zap.String("persona-name", name))
+	zap.L().Debug("lookup", zap.Any("personas", s.Personas))
 	for _, p := range s.Personas {
+		zap.L().Debug("lookup", zap.Any("personas", p.GetPersonaName()))
 		if p.GetPersonaName() == name {
 			return p
 		}

@@ -13,14 +13,14 @@ func (h *Handler) chat(discord *discordgo.Session, message *discordgo.MessageCre
 		return
 	}
 
+	persona := h.getPersona(message.ChannelID)
 	prompt := strings.Replace(message.Content, h.Bot.BotTag(), h.Bot.Cfg.Name, -1)
-
 	metadata := domain.Metadata{
 		ChatId:       message.ChannelID,
 		UserNickname: h.Bot.GetName(message.Author),
 	}
 
-	response, err := h.Service.Prompt("normal", metadata, prompt)
+	response, err := h.Service.Prompt(persona, metadata, prompt)
 	if err != nil {
 		discord.ChannelMessageSend(
 			message.ChannelID,

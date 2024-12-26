@@ -6,14 +6,17 @@ import (
 )
 
 type Handler struct {
-	Bot     *discord.Bot
-	Service services.MainService
+	Bot         *discord.Bot
+	Service     services.Service
+	PersonasMap map[string]string
 }
 
 type HandlerConfigurer func(b *Handler)
 
 func NewHandler(cfg ...HandlerConfigurer) (*Handler, error) {
-	h := &Handler{}
+	h := &Handler{
+		PersonasMap: map[string]string{},
+	}
 
 	for _, c := range cfg {
 		c(h)

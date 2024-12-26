@@ -2,6 +2,7 @@ package openai
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,14 +12,14 @@ import (
 )
 
 type OpenAIClient struct {
-	cfg OpenAIClientConfig
+	Cfg OpenAIClientConfig
 }
 
 type OpenAIClientConfiger func(*OpenAIClient) error
 
 func NewOpenAIClient(cfgs ...OpenAIClientConfiger) *OpenAIClient {
 	cfg := DefaultConfig()
-	client := OpenAIClient{cfg: cfg}
+	client := OpenAIClient{Cfg: cfg}
 
 	for _, cfgFn := range cfgs {
 		cfgFn(&client)
@@ -27,7 +28,7 @@ func NewOpenAIClient(cfgs ...OpenAIClientConfiger) *OpenAIClient {
 	return &client
 }
 
-func (c *OpenAIClient) _client(cfg OpenAIClientConfig) http.Client {
+func (c *OpenAIClient) _client() http.Client {
 	return http.Client{
 		Timeout: 30 * time.Second,
 	}
@@ -35,7 +36,7 @@ func (c *OpenAIClient) _client(cfg OpenAIClientConfig) http.Client {
 
 func (c *OpenAIClient) Prompt(system string, message string) (string, error) {
 	// Body
-	r := NewRequestWithDefaults(c.cfg)
+	r := NewRequestWithDefaults(c.Cfg)
 	r.AddMessages(
 		NewSystemMessage(system),
 		NewUserMessage(message),
@@ -49,7 +50,7 @@ func (c *OpenAIClient) Prompt(system string, message string) (string, error) {
 	bodyReader := bytes.NewReader(reqBody)
 
 	// Request
-	req, err := http.NewRequest(http.MethodPost, c.cfg.Endpoint, bodyReader)
+	req, err := http.NewRequest(http.MethodPost, c.Cfg.Endpoint, bodyReader)
 	if err != nil {
 		zap.L().Error("failed to create http request", zap.Error(err))
 		return "", err
@@ -57,9 +58,9 @@ func (c *OpenAIClient) Prompt(system string, message string) (string, error) {
 
 	// Headers
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.cfg.APIKey))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Cfg.APIKey))
 
-	client := c._client(c.cfg)
+	client := c._client()
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -75,6 +76,10 @@ func (c *OpenAIClient) Prompt(system string, message string) (string, error) {
 	}
 
 	response, err := NewResponse(body)
+	zap.L().Debug("received", zap.Any("response", response))
+	if len(response.Choices) < 1 {
+		return "", errors.New("RATE_LIMIT_EXCEEDED")
+	}
 
 	return response.Choices[0].Message.Content, nil
 }

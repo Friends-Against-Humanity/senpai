@@ -5,6 +5,8 @@ import (
 	"os/signal"
 
 	"github.com/Friends-Against-Humanity/senpai/internal/core/services"
+	"github.com/Friends-Against-Humanity/senpai/internal/core/services/personas"
+	"github.com/Friends-Against-Humanity/senpai/internal/core/services/personas/normal"
 	"github.com/Friends-Against-Humanity/senpai/internal/handler"
 	"github.com/Friends-Against-Humanity/senpai/internal/utils/log"
 	"github.com/Friends-Against-Humanity/senpai/pkg/channels/discord"
@@ -22,12 +24,20 @@ func main() {
 	bot, err := discord.NewBot(func(b *discord.Bot) {
 		b.Cfg = botCfg
 	})
-	model := openai.NewOpenAIClient()
+	model := openai.NewOpenAIClient(func(c *openai.OpenAIClient) error {
+		c.Cfg = openai.DefaultConfig().WithModel(openai.GPT4OMini)
+		return nil
+	})
 
 	// Services
-	mainSvc := services.NewMainService(func(svc *services.MainService) error {
+	mainSvc := services.NewService(func(svc *services.Service) error {
 		svc.ConversationalAgent = model
 		svc.HistoryGateway = bot
+		svc.FallbackPersona = normal.NewNormalPersona()
+		svc.Personas = []personas.PersonaHandler{
+			normal.NewNormalPersona(),
+		}
+
 		return nil
 	})
 

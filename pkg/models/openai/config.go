@@ -38,3 +38,8 @@ func DefaultConfig() OpenAIClientConfig {
 		GPT4O,
 	)
 }
+
+func (c OpenAIClientConfig) WithModel(model string) OpenAIClientConfig {
+	c.Model = model
+	return c
+}

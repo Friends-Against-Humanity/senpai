@@ -1,4 +1,4 @@
-package handler
+package discord
 
 import (
 	"fmt"
@@ -8,12 +8,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func (b *Bot) tag() string {
-	return fmt.Sprintf("<@%s>", b.Cfg.ID)
-}
-
-func (b *Bot) isMentioned(message string) bool {
-	return strings.Contains(message, b.tag())
+func (b *Bot) GetHistory(channel string) ([]string, error) {
+	return b.getLastestMessages(channel, b.maximimMessagesInHistory)
 }
 
 func (b *Bot) getNames() (map[string]string, error) {
@@ -49,7 +45,7 @@ func (b *Bot) getLastestMessages(channelID string, count int) ([]string, error) 
 	return history, nil
 }
 
-func (b *Bot) auditMessage(message *discordgo.MessageCreate) error {
-	b.members[message.Author.ID] = message.Author.GlobalName
+func (b *Bot) pre(message *discordgo.MessageCreate) error {
+	b.members[message.Author.ID] = b.GetName(message.Author)
 	return nil
 }

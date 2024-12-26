@@ -1,7 +1,6 @@
-package handler
+package discord
 
 import (
-	"github.com/Friends-Against-Humanity/senpai/internal/core/services"
 	"github.com/bwmarrin/discordgo"
 	"go.uber.org/zap"
 )
@@ -9,9 +8,8 @@ import (
 type Bot struct {
 	Cfg     BotConfig
 	session *discordgo.Session
-	Service services.MainService
 
-	// Workaround
+	// // Workaround
 	members                  map[string]string
 	maximimMessagesInHistory int
 }
@@ -28,15 +26,26 @@ func NewBot(cfg ...BotConfigurer) (*Bot, error) {
 		c(bot)
 	}
 
-	discord, err := discordgo.New("Bot " + bot.Cfg.APIToken)
+	discord, err := discordgo.New("Bot " + bot.Cfg.Token)
 	if err != nil {
 		return nil, err
 	}
 
-	discord.AddHandler(bot.handler)
-
 	bot.session = discord
 	return bot, nil
+}
+
+func (b *Bot) Handler(fn func(s *discordgo.Session, m *discordgo.MessageCreate)) {
+	b.session.AddHandler(func(s *discordgo.Session, m *discordgo.MessageCreate) {
+		zap.L().Info("Message received",
+			zap.String("message", m.Content),
+			zap.String("author-id", m.Author.ID),
+			zap.String("author", m.Author.GlobalName),
+			zap.String("channel", m.ChannelID),
+		)
+		b.pre(m)
+		fn(s, m)
+	})
 }
 
 func (b *Bot) Run() {
@@ -45,5 +54,6 @@ func (b *Bot) Run() {
 }
 
 func (b *Bot) Close() error {
+	zap.L().Info("Bot is closing")
 	return b.session.Close()
 }

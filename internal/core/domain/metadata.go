@@ -1,6 +1,8 @@
 package domain
 
+type ChatHistory []string
+
 type Metadata struct {
-	UserNickname string   `json:"user_nickname"`
-	ChatHistory  []string `json:"chat_history"`
+	ChatId       string `json:"chat_id"`
+	UserNickname string `json:"user_nickname"`
 }

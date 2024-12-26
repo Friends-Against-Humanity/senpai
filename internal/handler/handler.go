@@ -1,41 +1,67 @@
 package handler
 
 import (
-	"fmt"
-	"strings"
-
-	"github.com/Friends-Against-Humanity/senpai/internal/core/domain"
-	"github.com/bwmarrin/discordgo"
-	"go.uber.org/zap"
+	"github.com/Friends-Against-Humanity/senpai/internal/core/services"
+	"github.com/Friends-Against-Humanity/senpai/pkg/channels/discord"
 )
 
-func (b *Bot) handler(discord *discordgo.Session, message *discordgo.MessageCreate) {
-	zap.L().Info("received message", zap.String("message", message.ChannelID), zap.String("author", message.Author.ID))
-	b.auditMessage(message)
-	if !b.isMentioned(message.Content) {
-		return
-	}
-
-	fmt.Println("Hello", message.Author.GlobalName)
-
-	latestMessages, err := b.getLastestMessages(message.ChannelID, b.maximimMessagesInHistory)
-	if err != nil {
-		discord.ChannelMessageSend(message.ChannelID, "Ouch! I'm sorry, I'm not feeling well right now. Please try again later.")
-		return
-	}
-
-	metadata := domain.Metadata{
-		UserNickname: message.Author.GlobalName,
-		ChatHistory:  latestMessages,
-	}
-
-	prompt := strings.Replace(message.Content, b.tag(), b.Cfg.Name, -1)
-	response, err := b.Service.Prompt(metadata, prompt)
-	if err != nil {
-		discord.ChannelMessageSend(message.ChannelID, "Ouch! I'm sorry, I'm not feeling well right now. Please try again later.")
-		return
-	}
-	fmt.Println("Hello", message.Author.GlobalName, response)
-
-	discord.ChannelMessageSend(message.ChannelID, response)
+type Handler struct {
+	Bot     *discord.Bot
+	Service services.MainService
 }
+
+type HandlerConfigurer func(b *Handler)
+
+func NewHandler(cfg ...HandlerConfigurer) (*Handler, error) {
+	h := &Handler{}
+
+	for _, c := range cfg {
+		c(h)
+	}
+
+	h.Bot.Handler(h.entrypoint)
+
+	return h, nil
+}
+
+// type Bot struct {
+// 	Cfg     BotConfig
+// 	session *discordgo.Session
+// 	Service services.MainService
+
+// 	// Workaround
+// 	members                  map[string]string
+// 	maximimMessagesInHistory int
+// }
+
+// type BotConfigurer func(b *Bot)
+
+// func NewBot(cfg ...BotConfigurer) (*Bot, error) {
+// 	bot := &Bot{
+// 		maximimMessagesInHistory: 15,
+// 		members:                  map[string]string{},
+// 	}
+
+// 	for _, c := range cfg {
+// 		c(bot)
+// 	}
+
+// 	discord, err := discordgo.New("Bot " + bot.Cfg.APIToken)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	discord.AddHandler(bot.handler)
+
+// 	bot.session = discord
+// 	return bot, nil
+// }
+
+// func (b *Bot) Run() {
+// 	b.session.Open()
+// 	zap.L().Info("Bot is running")
+// }
+
+// func (b *Bot) Close() error {
+// 	return b.session.Close()
+// }

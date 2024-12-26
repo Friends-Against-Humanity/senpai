@@ -7,7 +7,8 @@ import (
 )
 
 type MainService struct {
-	ConversationalAgent ports.ConversationalAgent
+	ports.ConversationalAgent
+	ports.HistoryGateway
 }
 
 type MainServiceConfigurer func(*MainService) error
@@ -23,8 +24,18 @@ func NewMainService(cfgs ...MainServiceConfigurer) MainService {
 }
 
 func (s *MainService) Prompt(metadata domain.Metadata, message string) (string, error) {
-	_metadata := makeMetadata(metadata)
-	prompt := NewPrompt(prompt.MAIN_PROMPT_WITH_METADATA, "METADATA_JSON", _metadata)
+	_metadata := dumpMetadata(metadata)
+	chatHistory, err := s.HistoryGateway.GetHistory(metadata.ChatId)
+	if err != nil {
+		return "", s.formatError(err)
+	}
+	_chatHistory := dumpChatHistory(chatHistory)
+
+	prompt := NewPrompt(
+		prompt.MAIN_PROMPT_WITH_METADATA,
+		"METADATA_JSON", _metadata,
+		"CHAT_HISTORY", _chatHistory,
+	)
 	result, err := s.ConversationalAgent.Prompt(prompt, message)
 	if err != nil {
 		return "", s.formatError(err)
